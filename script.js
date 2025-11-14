@@ -1,0 +1,740 @@
+<script>
+        // --- Configuration & State ---
+        const APP_CONTAINER = document.getElementById('app-container');
+        let gameState = {
+            page: 'intro', 
+            game1: { // Memory Match 
+                cards: [],
+                flippedCards: [],
+                matchesFound: 0,
+                isLocked: false,
+                totalMatches: 4,
+            },
+            game2: { // Fill Name
+                correctName: "Aye", 
+            },
+            game3: { // Birthday Date (15/11)
+                // !!! THIS SECTION IS NOW FIXED !!!
+                correctDay: 15,
+                correctMonth: 11,
+            },
+            game4: { 
+                correctPassword: "260909", 
+            },
+            game5: { // Biodata Quiz
+                biodata: {
+                    // !!! EDIT THESE FACTS TO MATCH YOUR PARTNER'S BIODATA !!!
+                    "Name": "zahraaa",
+                    "Favorite food": "All sweet food!",
+                    "Favorite drink": "Matchaaaa & coffeee",
+                    "Favorite person": "ayee" // This is the quiz answer
+                },
+                quizAnswer: "ayee",
+            },
+            game6: { // Do You Love Me? Trick
+                isSolved: false,
+            }
+        };
+
+        const birthdayMessage = {
+            recipient: "untuk ayee dari zahraa",
+            message: "Selamat hari kelahiran ayeekuuu!\n\nAku bikin ini karena kamu sering bikin hidupku terasa lebih ringan, dan ingin kasih sesuatu yang bisa bikin hatimu ringan juga. Semoga saat kamu baca ini, kamu inget kalau ada seseorang yang selalu nyimpen kamu di pikirannya, dan selalu pengen lihat kamu bahagiaaaa. \n Semoga kamu selalu sehat, dijauhkan dari hal-hal yang bikin capek hati, dan selalu dikelilingi orang-orang baik yaa. Semoga tahun ini penuh hal indah dan berwarna. tetap jadi dirimu yang hangat dan bisa aku jadiin tempat pulang setiap harii yaaa?\n Jangan lupa juga jaga kesehatan dan kasih ruang buat kamu istirahat, karena kamu sering terlalu kuat sampai lupa kalau kamu juga pantas tenang, i love youu sayanggg!\n\nMade with love -Z" 
+        }; 
+        
+        // --- Gemini API Configuration ---
+        // !!! IMPORTANT: YOU MUST ADD YOUR API KEY HERE FOR THE AUDIO TO WORK !!!
+        const apiKey = ""; // <--- PASTE YOUR GEMINI API KEY HERE
+        const TTS_API_URL = `${new URL(document.baseURI).origin}/v1beta/models/gemini-2.5-flash-preview-tts:generateContent?key=${apiKey}`;
+
+        // --- TTS Helper Functions ---
+        const base64ToArrayBuffer = (base64) => {
+            const binaryString = atob(base64);
+            const len = binaryString.length;
+            const bytes = new Uint8Array(len);
+            for (let i = 0; i < len; i++) {
+                bytes[i] = binaryString.charCodeAt(i);
+            }
+            return bytes.buffer;
+        };
+
+        const pcmToWav = (pcmData, sampleRate) => {
+            const numChannels = 1;
+            const bytesPerSample = 2;
+            const blockAlign = numChannels * bytesPerSample;
+            const byteRate = sampleRate * blockAlign;
+            const pcmLength = pcmData.length * bytesPerSample;
+            const totalLength = 44 + pcmLength;
+
+            const buffer = new ArrayBuffer(totalLength);
+            const view = new DataView(buffer);
+
+            // RIFF chunk
+            view.setUint32(0, 0x46464952, true); // "RIFF"
+            view.setUint32(4, totalLength - 8, true); 
+            view.setUint32(8, 0x45564157, true); // "WAVE"
+
+            // fmt chunk
+            view.setUint32(12, 0x20746d66, true); // "fmt "
+            view.setUint32(16, 16, true); 
+            view.setUint16(20, 1, true); 
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, 16, true); 
+
+            // data chunk
+            view.setUint32(36, 0x61746164, true); // "data"
+            view.setUint32(40, pcmLength, true);
+
+            // Write PCM data
+            for (let i = 0; i < pcmData.length; i++) {
+                view.setInt16(44 + i * bytesPerSample, pcmData[i], true);
+            }
+
+            return new Blob([view], { type: 'audio/wav' });
+        };
+
+
+        // --- Utility Functions: Fetch with Retry ---
+
+        const fetchWithRetry = async (url, payload, retries = 3) => {
+            for (let i = 0; i < retries; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    if (response.ok) {
+                        return response.json();
+                    } else if (response.status === 429 && i < retries - 1) {
+                        const delay = Math.pow(2, i) * 1000;
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        continue;
+                    } else {
+                        throw new Error(`API call failed with status: ${response.status}`);
+                    }
+                } catch (error) {
+                    if (i === retries - 1) throw error;
+                    const delay = Math.pow(2, i) * 1000;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+            }
+        };
+
+        const shuffleArray = (array) => {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        };
+
+        const renderPage = () => {
+            APP_CONTAINER.innerHTML = '';
+            let content = '';
+
+            switch (gameState.page) {
+                case 'intro':
+                    content = renderIntro();
+                    break;
+                case 'game1':
+                    content = renderGame1();
+                    break;
+                case 'game2':
+                    content = renderGame2();
+                    break;
+                case 'game3':
+                    content = renderGame3();
+                    break;
+                case 'game4':
+                    content = renderGame4();
+                    break;
+                case 'game5':
+                    content = renderGame5();
+                    break;
+                case 'game6':
+                    content = renderGame6();
+                    break;
+                case 'card':
+                    content = renderCard();
+                    break;
+                default:
+                    content = renderIntro();
+            }
+
+            APP_CONTAINER.innerHTML = content;
+            
+            // Setup listeners based on the current page
+            switch (gameState.page) {
+                case 'game1':
+                    setupGame1Listeners();
+                    break;
+                case 'game2':
+                    setupGame2Listeners();
+                    break;
+                case 'game3':
+                    setupGame3Listeners();
+                    break;
+                case 'game4':
+                    setupGame4Listeners();
+                    break;
+                case 'game5':
+                    setupGame5Listeners();
+                    break;
+                case 'game6':
+                    setupGame6Listeners();
+                    break;
+                case 'card':
+                    setupCardListeners();
+                    break;
+            }
+        };
+
+        // --- Flow Control ---
+
+        const changePage = (newPage) => {
+            gameState.page = newPage;
+            renderPage();
+        };
+
+        // Custom Modal replacement for alert()
+        const alertModal = (title, message) => {
+            const modalHtml = `
+                <div id="custom-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-deep bg-opacity-70 backdrop-blur-sm transition-opacity duration-300">
+                    <div class="bg-cream text-deep p-8 rounded-xl max-w-sm mx-4 shadow-2xl transform transition-transform duration-300 scale-100 border-4 border-mauve">
+                        <h3 class="text-2xl font-bold font-fortalesia mb-3 text-deep">${title}</h3>
+                        <p class="mb-5">${message}</p>
+                        <button id="modal-close" class="elegant-btn text-sm px-4 py-2 rounded-full font-semibold">
+                            Continue
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+            document.getElementById('modal-close').addEventListener('click', () => {
+                document.getElementById('custom-modal').remove();
+            });
+        };
+
+        // --- Render Intro (CLEANER DESIGN) ---
+
+        const renderIntro = () => {
+            document.title = "A Special Day for My Love";
+            return `
+                <div class="space-y-8 p-4 md:p-8">
+                    <p class="text-4xl font-fortalesia text-deep">
+                        A Little Birthday Gift!
+                    </p>
+                    <h1 class="text-6xl md:text-8xl font-fortalesia font-bold text-deep leading-tight">
+                       Hallo, selamat datang ayeee
+                    </h1>
+                    <p class="text-lg md:text-xl text-deep opacity-80 max-w-2xl mx-auto">
+                        Sebelum dapet ucapan dari aku, kamu harus selesaiin beberapa game dulu yaaa!
+                    </p>
+                    <button onclick="changePage('game1')" class="elegant-btn text-xl px-10 py-4 mt-8 rounded-full">
+                        Start the Birthday Game!
+                    </button>
+                </div>
+            `;
+        };
+
+        // --- Game 1: Memory Match (DESIGN UPDATED) ---
+
+        const initGame1 = () => {
+            const symbols = ['🎂', '💖', '🎁', '🐻']; 
+            let cards = [...symbols, ...symbols].map((symbol, index) => ({
+                id: index,
+                symbol: symbol,
+                isFlipped: false,
+                isMatched: false,
+            }));
+            gameState.game1.cards = shuffleArray(cards);
+            gameState.game1.flippedCards = [];
+            gameState.game1.matchesFound = 0;
+            gameState.game1.isLocked = false;
+        };
+
+        const renderGame1 = () => {
+            document.title = "Challenge 1: Memory Match";
+            if (gameState.game1.cards.length === 0) initGame1();
+
+            const cardElements = gameState.game1.cards.map(card => `
+                <div class="card-wrapper aspect-square perspective-1000">
+                    <div id="card-${card.id}" data-id="${card.id}" data-symbol="${card.symbol}" 
+                         class="card-game h-full relative text-3xl md:text-4xl ${card.isFlipped || card.isMatched ? 'flipped' : ''} ${card.isMatched ? 'opacity-60 pointer-events-none' : ''}">
+                        
+                        <div class="card-front">
+                            ${card.isMatched ? '✅' : '❓'}
+                        </div>
+
+                        <div class="card-back text-4xl md:text-5xl">
+                            ${card.symbol}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            return `
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">Lavender Memory Match</h2>
+                <p class="text-md text-deep/80 mb-6">Find the ${gameState.game1.totalMatches} pairs to unlock the next challenge!</p>
+                <div class="flex justify-center mb-6">
+                    <p class="text-xl text-deep font-semibold">Matches: ${gameState.game1.matchesFound} / ${gameState.game1.totalMatches}</p>
+                </div>
+                <div class="card-grid grid grid-cols-4 gap-3 md:gap-5 w-full max-w-lg mx-auto">
+                    ${cardElements}
+                </div>
+            `;
+        };
+
+        const handleCardClick = (cardId) => {
+            if (gameState.game1.isLocked) return;
+
+            const cardIndex = gameState.game1.cards.findIndex(c => c.id == cardId);
+            const card = gameState.game1.cards[cardIndex];
+
+            if (card.isFlipped || card.isMatched || gameState.game1.flippedCards.length >= 2) {
+                return;
+            }
+
+            card.isFlipped = true;
+            gameState.game1.flippedCards.push(card);
+            renderPage(); 
+
+            if (gameState.game1.flippedCards.length === 2) {
+                gameState.game1.isLocked = true;
+                const [card1, card2] = gameState.game1.flippedCards;
+
+                if (card1.symbol === card2.symbol) {
+                    // Match found
+                    setTimeout(() => {
+                        gameState.game1.cards[gameState.game1.cards.findIndex(c => c.id === card1.id)].isMatched = true;
+                        gameState.game1.cards[gameState.game1.cards.findIndex(c => c.id === card2.id)].isMatched = true;
+                        gameState.game1.matchesFound++;
+                        gameState.game1.flippedCards = [];
+                        gameState.game1.isLocked = false;
+                        renderPage();
+
+                        if (gameState.game1.matchesFound === gameState.game1.totalMatches) {
+                            setTimeout(() => {
+                                alertModal("Success! ", "You found all the pairs! Next challenge unlocked.");
+                                changePage('game2'); 
+                            }, 500);
+                        }
+                    }, 1000);
+                } else {
+                    // No match
+                    setTimeout(() => {
+                        gameState.game1.cards[gameState.game1.cards.findIndex(c => c.id === card1.id)].isFlipped = false;
+                        gameState.game1.cards[gameState.game1.cards.findIndex(c => c.id === card2.id)].isFlipped = false;
+                        gameState.game1.flippedCards = [];
+                        gameState.game1.isLocked = false;
+                        renderPage();
+                    }, 1500);
+                }
+            }
+        };
+
+        const setupGame1Listeners = () => {
+            document.querySelectorAll('.card-game').forEach(cardElement => {
+                cardElement.addEventListener('click', () => {
+                    handleCardClick(cardElement.dataset.id);
+                });
+            });
+        };
+
+        // --- Game 2: Fill Your Name (DESIGN UPDATED) ---
+
+        const renderGame2 = () => {
+            document.title = "Challenge 2: Fill Your Name";
+            return `
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">The Name Test</h2>
+                <p class="text-md text-deep/80 mb-8 max-w-lg mx-auto">
+                    Ketik nama kamu! (Hint: Yang biasanya aku panggil hehehe)
+                </p>
+                
+                <div class="flex flex-col justify-center items-center space-y-4 mb-6">
+                    <input type="text" id="name-input" placeholder="Enter your special name" class="input-style w-full max-w-xs focus:ring-4 focus:ring-mauve">
+                </div>
+
+                <button id="check-name-btn" class="elegant-btn text-lg px-8 py-3 rounded-xl">
+                    Confirm Identity
+                </button>
+
+                <div id="name-message" class="mt-6 text-xl font-semibold min-h-[2rem]"></div>
+            `;
+        };
+
+        const checkName = () => {
+            const input = document.getElementById('name-input').value.trim();
+            const correct = gameState.game2.correctName;
+            const messageElement = document.getElementById('name-message');
+
+            if (input.toLowerCase() === correct.toLowerCase()) {
+                messageElement.innerHTML = '<span class="text-deep">Yes, that\'s you! </span>';
+                document.getElementById('check-name-btn').disabled = true;
+                setTimeout(() => {
+                    changePage('game3'); 
+                }, 1500);
+            } else {
+                messageElement.innerHTML = '<span class="text-red-game">Hmm, try again. </span>';
+            }
+        };
+
+        const setupGame2Listeners = () => {
+            document.getElementById('check-name-btn').addEventListener('click', checkName);
+            document.getElementById('name-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') checkName();
+            });
+        };
+
+        // --- Game 3: When It's Your Birthday (DESIGN UPDATED) ---
+
+        const renderGame3 = () => {
+            document.title = "Challenge 3: Your Special Day";
+            return `
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">When is Your Birthday?</h2>
+                <p class="text-md text-deep/80 mb-8 max-w-lg mx-auto">
+                    Isi sesuai Tanggal & Bulan lahir kamuuu.
+                </p>
+                
+                <div class="flex justify-center items-center space-x-4 mb-6">
+                    <input type="number" id="day-input" min="1" max="31" maxlength="2" placeholder="DD" class="code-input input-style rounded-xl focus:ring-4 focus:ring-mauve" oninput="this.value=this.value.slice(0,2)" autofocus>
+                    <span class="text-3xl text-deep">/</span>
+                    <input type="number" id="month-input" min="1" max="12" maxlength="2" placeholder="MM" class="code-input input-style rounded-xl focus:ring-4 focus:ring-mauve" oninput="this.value=this.value.slice(0,2)">
+                </div>
+
+                <button id="check-date-btn" class="elegant-btn text-lg px-8 py-3 rounded-xl">
+                    Verify Date
+                </button>
+
+                <div id="date-message" class="mt-6 text-xl font-semibold min-h-[2rem]"></div>
+            `;
+        };
+
+        const checkDate = () => {
+            const dayInput = parseInt(document.getElementById('day-input').value);
+            const monthInput = parseInt(document.getElementById('month-input').value);
+            const messageElement = document.getElementById('date-message');
+
+            if (dayInput === gameState.game3.correctDay && monthInput === gameState.game3.correctMonth) {
+                messageElement.innerHTML = '<span class="text-deep">100% You already know that! </span>';
+                document.getElementById('check-date-btn').disabled = true;
+                setTimeout(() => {
+                    changePage('game4'); 
+                }, 1500);
+            } else {
+                messageElement.innerHTML = '<span class="text-red-game">That\'s not right! I need the correct day and month! </span>';
+            }
+        };
+
+        const setupGame3Listeners = () => {
+            document.getElementById('check-date-btn').addEventListener('click', checkDate);
+            document.querySelectorAll('#day-input, #month-input').forEach(input => {
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') checkDate();
+                });
+            });
+            // Auto-focus logic
+            document.getElementById('day-input').addEventListener('input', (e) => {
+                if (e.target.value.length === 2) {
+                    document.getElementById('month-input').focus();
+                }
+            });
+        };
+
+        // --- Game 4: Type Your Password (DESIGN UPDATED) ---
+
+        const renderGame4 = () => {
+            document.title = "Challenge 4: Secret Password";
+            return `
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">My Birthday wlee</h2>
+                <p class="text-md text-deep/80 mb-4 max-w-lg mx-auto">
+                    Kode rahasianya adalah ultah kuuu.
+                </p>
+                <p class="text-lg text-deep mb-8 italic">(Hint: ${gameState.game4.correctPassword.slice(0, 2)}/${gameState.game4.correctPassword.slice(2, 4)}/${gameState.game4.correctPassword.slice(4, 6)})</p>
+                
+                <div class="flex flex-col justify-center items-center space-y-4 mb-6">
+                    <input type="password" id="password-input" placeholder="Enter 6-digit code" maxlength="6" class="input-style w-full max-w-xs text-center text-2xl focus:ring-4 focus:ring-mauve">
+                </div>
+
+                <button id="check-password-btn" class="elegant-btn text-lg px-8 py-3 rounded-xl">
+                    Unlock Access
+                </button>
+
+                <div id="password-message" class="mt-6 text-xl font-semibold min-h-[2rem]"></div>
+            `;
+        };
+
+        const checkPassword = () => {
+            const input = document.getElementById('password-input').value.trim();
+            const correct = gameState.game4.correctPassword;
+            const messageElement = document.getElementById('password-message');
+
+            if (input === correct) {
+                messageElement.innerHTML = '<span class="text-deep">WOPYUUUU!!! </span>';
+                document.getElementById('check-password-btn').disabled = true;
+                setTimeout(() => {
+                    changePage('game5'); 
+                }, 1500);
+            } else {
+                messageElement.innerHTML = '<span class="text-red-game">Incorrect password. </span>';
+            }
+        };
+
+        const setupGame4Listeners = () => {
+            document.getElementById('check-password-btn').addEventListener('click', checkPassword);
+            document.getElementById('password-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') checkPassword();
+            });
+        };
+        
+        // --- Challenge 5: Biodata About Me (DESIGN UPDATED) ---
+
+        const renderGame5 = () => {
+            document.title = "Challenge 5: Biodata Check";
+            
+            const biodataHtml = Object.entries(gameState.game5.biodata).map(([key, value]) => `
+                <div class="flex justify-between items-center py-3 border-b border-mauve/50 last:border-b-0">
+                    <span class="font-semibold text-deep">${key}:</span>
+                    <span class="text-deep/80">${value}</span>
+                </div>
+            `).join('');
+            
+            return `
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">Biodata Review</h2>
+                <p class="text-md text-deep/80 mb-8 max-w-lg mx-auto">
+                    Baca baca tentang aku dulu sinii hehe
+                </p>
+                
+                <div class="bg-mauve/30 p-6 rounded-xl border-2 border-mauve w-full max-w-md mx-auto mb-8 text-left">
+                    ${biodataHtml}
+                </div>
+
+                <h3 class="text-2xl font-fortalesia text-deep mb-4">Quick Quiz:</h3>
+                <p class="text-lg text-deep/90 mb-4">Who is my favorite person?</p>
+
+                <div class="flex flex-col justify-center items-center space-y-4 mb-6">
+                    <input type="text" id="quiz-input" placeholder="Enter" class="input-style w-full max-w-xs focus:ring-4 focus:ring-mauve">
+                </div>
+
+                <button id="check-quiz-btn" class="elegant-btn text-lg px-8 py-3 rounded-xl">
+                    Submit Answer
+                </button>
+
+                <div id="quiz-message" class="mt-6 text-xl font-semibold min-h-[2rem]"></div>
+            `;
+        };
+
+        const checkQuiz = () => {
+            const input = document.getElementById('quiz-input').value.trim();
+            const correct = gameState.game5.quizAnswer;
+            const messageElement = document.getElementById('quiz-message');
+
+            if (input.toLowerCase() === correct.toLowerCase()) {
+                messageElement.innerHTML = '<span class="text-deep">Correct! Of course it\'s you! </span>';
+                document.getElementById('check-quiz-btn').disabled = true;
+                setTimeout(() => {
+                    changePage('game6'); 
+                }, 1500);
+            } else {
+                messageElement.innerHTML = '<span class="text-red-game">Oops, check the facts again! </span>';
+            }
+        };
+
+        const setupGame5Listeners = () => {
+            document.getElementById('check-quiz-btn').addEventListener('click', checkQuiz);
+            document.getElementById('quiz-input').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') checkQuiz();
+            });
+        };
+
+        // --- Game 6: Do You Love Me? (Trick) (DESIGN UPDATED) ---
+
+        const renderGame6 = () => {
+            document.title = "Challenge 6: The Final Question";
+            
+            return `
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">The Final Test</h2>
+                <p class="text-md text-deep/80 mb-8 max-w-lg mx-auto">
+                    There's only one question left...
+                </p>
+                
+                <h3 class="text-3xl font-semibold text-deep mb-10">Do you love me?</h3>
+
+                <div id="game6-area" class="flex justify-center items-center space-x-12 relative w-full max-w-lg mx-auto">
+                    <button id="yes-btn" class="elegant-btn text-2xl px-8 py-4 rounded-xl shadow-xl hover:scale-105 transition-transform border-4 border-deep">
+                        Yes!️ 
+                    </button>
+                    
+                    <button id="no-btn" class="text-cream bg-red-game text-lg px-6 py-3 rounded-full font-semibold shadow-lg" 
+                            style="top: 0%; left: 65%;">
+                        No :(
+                    </button>
+                </div>
+
+                <div id="love-message" class="mt-12 text-2xl font-semibold min-h-[2rem]"></div>
+            `;
+        };
+
+        const handleLoveAnswer = (isYes) => {
+            const messageElement = document.getElementById('love-message');
+            document.getElementById('yes-btn').disabled = true;
+            document.getElementById('no-btn').disabled = true;
+
+            if (isYes) {
+                messageElement.innerHTML = '<span class="text-deep">You win! </span>';
+                setTimeout(() => {
+                    changePage('card'); 
+                }, 1500);
+            } else {
+                messageElement.innerHTML = '<span class="text-red-game">Error! Logic failure detected. Please choose the correct answer.</span>';
+                document.getElementById('yes-btn').disabled = false;
+                document.getElementById('no-btn').disabled = false;
+            }
+        };
+
+        const runAway = (e) => {
+            const btn = e.target;
+            
+            // Generate new position (max 75% to keep it centered, min 25%)
+            // We use relative positioning to the area
+            const newX = Math.random() * 50 + 25; // 25% to 75%
+            const newY = Math.random() * 80;      // 0% to 80%
+
+            btn.style.left = `${newX}%`;
+            btn.style.top = `${newY}%`;
+        };
+
+
+        const setupGame6Listeners = () => {
+            document.getElementById('yes-btn').addEventListener('click', () => handleLoveAnswer(true));
+            
+            const noBtn = document.getElementById('no-btn');
+            noBtn.addEventListener('click', () => handleLoveAnswer(false));
+            
+            // THE TRICK: No button runs away when the mouse hovers over it
+            noBtn.addEventListener('mouseenter', runAway);
+            noBtn.addEventListener('mousemove', runAway);
+            noBtn.addEventListener('touchstart', runAway); // For touch screens
+        };
+
+        // --- Final Card (DESIGN UPDATED) ---
+
+        const generateAndPlayTTS = async (text) => {
+            const btn = document.getElementById('tts-btn');
+            const msg = document.getElementById('tts-status');
+            const audio = document.getElementById('tts-audio');
+
+            btn.disabled = true;
+            msg.innerHTML = '<span class="text-deep">Generating audio...</span>';
+
+            const cleanText = text.replace(/(\r\n|\n|\r)/gm, " ");
+
+            const payload = {
+                contents: [{
+                    parts: [{ text: `Say in a warm, friendly voice: ${cleanText}` }]
+                }],
+                generationConfig: {
+                    responseModalities: ["AUDIO"],
+                    speechConfig: {
+                        voiceConfig: {
+                            prebuiltVoiceConfig: { voiceName: "Puck" } // Upbeat voice
+                        }
+                    }
+                },
+            };
+            
+            try {
+                const result = await fetchWithRetry(TTS_API_URL, payload);
+                const part = result?.candidates?.[0]?.content?.parts?.[0];
+                const audioData = part?.inlineData?.data;
+                const mimeType = part?.inlineData?.mimeType;
+
+                if (audioData && mimeType && mimeType.startsWith("audio/")) {
+                    const rateMatch = mimeType.match(/rate=(\d+)/);
+                    const sampleRate = rateMatch ? parseInt(rateMatch[1], 10) : 16000;
+                    
+                    const pcmData = base64ToArrayBuffer(audioData);
+                    const pcm16 = new Int16Array(pcmData);
+                    const wavBlob = pcmToWav(pcm16, sampleRate);
+                    const audioUrl = URL.createObjectURL(wavBlob);
+
+                    audio.src = audioUrl;
+                    audio.play();
+
+                    msg.innerHTML = '<span class="text-green-600">Playing message...</span>';
+                    
+                    audio.onended = () => {
+                        msg.innerHTML = '<span class="text-deep/70">Finished playback.</span>';
+                        btn.disabled = false;
+                    };
+                } else {
+                    throw new Error("Invalid audio response structure from API.");
+                }
+            } catch (error) {
+                console.error("TTS Error:", error);
+                msg.innerHTML = '<span class="text-red-game">Error generating audio.</span>';
+                btn.disabled = false;
+            }
+        };
+
+        const renderCard = () => {
+            document.title = "Happy Birthday!";
+            const messageHtml = birthdayMessage.message.replace(/\n/g, '<br>');
+            return `
+                <div class="p-4 md:p-8">
+                    <div class="bg-lavender text-cream p-6 md:p-10 rounded-2xl shadow-2xl border-4 border-deep">
+                        <p class="text-6xl md:text-7xl font-fortalesia font-bold mb-4 text-center text-cream">
+                            Happy Birthday!
+                        </p>
+                        <h2 class="text-3xl font-fortalesia font-semibold mb-6 text-center">
+                            To ${birthdayMessage.recipient},
+                        </h2>
+                        <div class="bg-cream/20 p-6 rounded-lg text-left text-lg md:text-xl leading-relaxed text-cream whitespace-pre-line shadow-inner">
+                            ${messageHtml}
+                        </div>
+                        
+                        <div class="mt-8 text-center border-t border-cream/30 pt-6">
+                            <button id="tts-btn" class="elegant-btn bg-cream text-deep px-6 py-3 rounded-full hover:bg-white">
+                                Listen to the Message 🎤
+                            </button>
+                            <div id="tts-status" class="mt-3 text-sm min-h-[1.5rem] text-cream/80"></div>
+                        </div>
+
+                        <div class="mt-8 text-center">
+                            <h3 class="text-2xl font-fortalesia text-cream mb-4">Your Birthday Playlist</h3>
+                            <p class="text-cream/80 mb-4">I made a special playlist just for you:</p>
+                            <a href="https://open.spotify.com/playlist/0ZauSo5C0u5PCW5vgNWCFM?si=nGKvpZf3RPSJgUFPZbYGJw" target="_blank" class="w-full max-w-sm mx-auto bg-deep rounded-lg overflow-hidden shadow-2xl inline-block hover:scale-[1.02] transition-transform">
+                                <div class="flex items-center space-x-4 p-4">
+                                    <svg class="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.18 17.55c-.198.322-.618.423-.938.225-2.618-1.608-5.918-1.99-9.158-1.07-1.168.322-2.318.152-3.138-.415-.818-.568-1.12-1.61-.75-2.73 1.25-3.832 3.86-7.14 7.03-8.86 1.05-.58 2.3-.398 3.06.33.76.728.98 1.9.48 2.92-2.07 4.35-4.63 7.82-7.2 9.5-.4.258-.8.36-1.18.258z"/>
+                                    </svg>
+                                    <div>
+                                        <p class="text-sm font-bold text-white text-left">The Birthday Vibe</p>
+                                        <p class="text-xs text-gray-400 text-left">A playlist by me, for you.</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const setupCardListeners = () => {
+            const fullMessage = birthdayMessage.recipient + ". " + birthdayMessage.message;
+            document.getElementById('tts-btn').addEventListener('click', () => generateAndPlayTTS(fullMessage));
+        };
+
+
+        // --- Initialization ---
+
+        window.onload = () => {
+            initGame1();
+            renderPage();
+        };
+
+    </script>
