@@ -161,12 +161,12 @@
             game2: { // Fill Name
                 correctName: "Aye", 
             },
-            game3: { // Birthday Date (26/09)
-                correctDay: 26, 
+            game3: { // Birthday Date (15/11)
+                correctDay: 15, 11,
                 correctMonth: 9, 
             },
-            game4: { // Password (Hint: 08/06/95)
-                correctPassword: "080695", 
+            game4: { 
+                correctPassword: "260909", 
             },
             game5: { // Biodata Quiz
                 biodata: {
@@ -381,7 +381,7 @@
                         Sebelum dapet ucapan dari aku, kamu harus selesaiin beberapa game dulu yaaa!
                     </p>
                     <button onclick="changePage('game1')" class="elegant-btn text-xl px-10 py-4 mt-8 rounded-full">
-                        Start the Birthday Game! ✨
+                        Start the Birthday Game!
                     </button>
                 </div>
             `;
@@ -465,7 +465,7 @@
 
                         if (gameState.game1.matchesFound === gameState.game1.totalMatches) {
                             setTimeout(() => {
-                                alertModal("Success! 🎉", "You found all the pairs! Next challenge unlocked.");
+                                alertModal("Success! ", "You found all the pairs! Next challenge unlocked.");
                                 changePage('game2'); 
                             }, 500);
                         }
@@ -519,13 +519,13 @@
             const messageElement = document.getElementById('name-message');
 
             if (input.toLowerCase() === correct.toLowerCase()) {
-                messageElement.innerHTML = '<span class="text-deep">Yes, that\'s you! ✅</span>';
+                messageElement.innerHTML = '<span class="text-deep">Yes, that\'s you! </span>';
                 document.getElementById('check-name-btn').disabled = true;
                 setTimeout(() => {
                     changePage('game3'); 
                 }, 1500);
             } else {
-                messageElement.innerHTML = '<span class="text-red-game">Hmm, try again. ❌</span>';
+                messageElement.innerHTML = '<span class="text-red-game">Hmm, try again. </span>';
             }
         };
 
@@ -566,13 +566,13 @@
             const messageElement = document.getElementById('date-message');
 
             if (dayInput === gameState.game3.correctDay && monthInput === gameState.game3.correctMonth) {
-                messageElement.innerHTML = '<span class="text-deep">100% You already know that! ✅</span>';
+                messageElement.innerHTML = '<span class="text-deep">100% You already know that! </span>';
                 document.getElementById('check-date-btn').disabled = true;
                 setTimeout(() => {
                     changePage('game4'); 
                 }, 1500);
             } else {
-                messageElement.innerHTML = '<span class="text-red-game">That\'s not right! I need the correct day and month! ❌</span>';
+                messageElement.innerHTML = '<span class="text-red-game">That\'s not right! I need the correct day and month! </span>';
             }
         };
 
@@ -620,13 +620,13 @@
             const messageElement = document.getElementById('password-message');
 
             if (input === correct) {
-                messageElement.innerHTML = '<span class="text-deep">WOPYUUUU!!! ✅</span>';
+                messageElement.innerHTML = '<span class="text-deep">WOPYUUUU!!! </span>';
                 document.getElementById('check-password-btn').disabled = true;
                 setTimeout(() => {
                     changePage('game5'); 
                 }, 1500);
             } else {
-                messageElement.innerHTML = '<span class="text-red-game">Incorrect password. ❌</span>';
+                messageElement.innerHTML = '<span class="text-red-game">Incorrect password. </span>';
             }
         };
 
@@ -680,13 +680,13 @@
             const messageElement = document.getElementById('quiz-message');
 
             if (input.toLowerCase() === correct.toLowerCase()) {
-                messageElement.innerHTML = '<span class="text-deep">Correct! Of course it\'s you! ✅</span>';
+                messageElement.innerHTML = '<span class="text-deep">Correct! Of course it\'s you! </span>';
                 document.getElementById('check-quiz-btn').disabled = true;
                 setTimeout(() => {
                     changePage('game6'); 
                 }, 1500);
             } else {
-                messageElement.innerHTML = '<span class="text-red-game">Oops, check the facts again! ❌</span>';
+                messageElement.innerHTML = '<span class="text-red-game">Oops, check the facts again! </span>';
             }
         };
 
@@ -713,7 +713,7 @@
                 <div id="game6-area" class="flex justify-center items-center space-x-12 relative w-full max-w-lg mx-auto">
                     <!-- YES Button (Static and correct) -->
                     <button id="yes-btn" class="elegant-btn text-2xl px-8 py-4 rounded-xl shadow-xl hover:scale-105 transition-transform border-4 border-deep">
-                        Yes!️ 💖
+                        Yes!️ 
                     </button>
                     
                     <!-- NO Button (The trick button) -->
@@ -733,7 +733,7 @@
             document.getElementById('no-btn').disabled = true;
 
             if (isYes) {
-                messageElement.innerHTML = '<span class="text-deep">You win! ✨</span>';
+                messageElement.innerHTML = '<span class="text-deep">You win! </span>';
                 setTimeout(() => {
                     changePage('card'); 
                 }, 1500);
@@ -836,7 +836,7 @@
                 <div class="p-4 md:p-8">
                     <div class="bg-lavender text-cream p-6 md:p-10 rounded-2xl shadow-2xl border-4 border-deep">
                         <p class="text-6xl md:text-7xl font-fortalesia font-bold mb-4 text-center text-cream">
-                            🎉 Happy Birthday! 🎉
+                            Happy Birthday!
                         </p>
                         <h2 class="text-3xl font-fortalesia font-semibold mb-6 text-center">
                             To ${birthdayMessage.recipient},
