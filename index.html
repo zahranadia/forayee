@@ -4,23 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A Special Day for My Love</title>
+    <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- New Fonts: Times New Roman (system font) and Pinyon Script (decorative) -->
-    <link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap" rel="stylesheet">
+    <!-- New Fonts: Inter (main body) and Pinyon Script (decorative) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Pinyon+Script&display=swap" rel="stylesheet">
     <style>
-        /* New Color Palette: Blue (#6a90b4) and Light Blue-Grey (#d2dbeb) */
+        /* NEW Color Palette: Lavender and Cream */
         :root {
-            --velvet: #6a90b4; /* Medium Blue/Velvet */
-            --ivory: #d2dbeb; /* Light Blue-Grey/Ivory */
-            --accent: #a6c2e3; /* Slightly Lighter Blue for accent */
-            --highlight: #F0F0F0; /* Brightest white for text/shadow pop */
-            --red-game: #FF5252;
-            --gold-game: #FFD700;
+            --lavender: #8E8AC7; /* Soft Lavender - Main Background */
+            --cream: #F0EFEF;   /* Light Cream/Off-White - Main Text/Input Background */
+            --mauve: #B9B8D3;   /* Muted Mauve/Accent */
+            --deep: #3A356A;    /* Deep Violet/Text Color */
+            --red-game: #E94E77; /* Rose Red */
+            --gold-game: #FFC300;
         }
         body {
-            font-family: 'Times New Roman', serif;
-            background-color: var(--velvet);
-            color: var(--ivory);
+            font-family: 'Inter', sans-serif;
+            background-color: var(--lavender);
+            color: var(--deep);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -29,17 +30,35 @@
             position: relative;
         }
         .container {
-            background-color: var(--velvet);
-            border: 4px solid var(--highlight);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(240, 240, 240, 0.7);
+            background-color: var(--cream);
+            /* Soft border and Shadow */
+            border: 2px solid var(--mauve);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), 0 0 0 10px rgba(255, 255, 255, 0.3) inset; /* Double shadow for depth */
         }
         /* Decorative font class */
         .font-fortalesia { 
             font-family: 'Pinyon Script', cursive; 
         }
+        /* General button style */
+        .elegant-btn {
+            background-color: var(--mauve);
+            color: var(--deep);
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .elegant-btn:hover {
+            background-color: var(--lavender);
+            color: var(--cream);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Card Game Styles */
         .card-game {
             transform-style: preserve-3d;
-            transition: transform 0.6s;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
             cursor: pointer;
         }
         .card-game.flipped {
@@ -53,47 +72,40 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 0.75rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            font-size: 1.5rem;
+            border-radius: 0.5rem;
             font-weight: 700;
         }
         .card-front {
-            background-color: var(--accent);
-            color: var(--velvet);
+            background-color: var(--mauve);
+            color: var(--cream);
             transform: rotateY(0deg);
-            border: 2px solid var(--velvet);
+            border: 3px solid var(--deep);
         }
         .card-back {
-            background-color: var(--ivory);
-            color: var(--velvet);
+            background-color: var(--cream);
+            color: var(--deep);
             transform: rotateY(180deg);
-            border: 2px solid var(--accent);
+            border: 3px solid var(--mauve);
         }
         .input-style {
-            background-color: var(--ivory);
-            color: var(--velvet);
-            border: 2px solid var(--accent);
-            padding: 0.5rem;
-            border-radius: 0.5rem;
+            background-color: var(--cream);
+            color: var(--deep);
+            border: 2px solid var(--mauve);
+            padding: 0.75rem;
+            border-radius: 0.75rem;
+            transition: border-color 0.3s;
+        }
+        .input-style:focus {
+            border-color: var(--deep);
+            outline: none;
         }
         .code-input {
-            width: 3rem;
-            height: 3rem;
+            width: 3.5rem;
+            height: 3.5rem;
             text-align: center;
             font-size: 1.5rem;
         }
-        .velvet-btn {
-            background-color: var(--accent);
-            color: var(--velvet);
-            transition: all 0.2s;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
-        }
-        .velvet-btn:hover {
-            background-color: #c2dafb; /* Lighter Accent Blue */
-            box-shadow: 0 4px 15px rgba(255, 255, 255, 0.6);
-            transform: translateY(-2px);
-        }
+
         /* Game 6 Styles */
         #game6-area {
             position: relative;
@@ -130,7 +142,7 @@
     <!-- Audio element for TTS playback -->
     <audio id="tts-audio" style="display: none;"></audio>
 
-    <div id="app-container" class="container w-full max-w-4xl p-6 md:p-10 rounded-3xl text-center">
+    <div id="app-container" class="container w-full max-w-4xl p-6 md:p-12 rounded-3xl text-center">
         <!-- Content will be rendered here by JavaScript -->
     </div>
 
@@ -138,27 +150,25 @@
         // --- Configuration & State ---
         const APP_CONTAINER = document.getElementById('app-container');
         let gameState = {
-            page: 'intro', // 'intro', 'game1', 'game2', 'game3', 'game4', 'game5', 'game6', 'card'
-            game1: { // Memory Match (UNCHANGED)
+            page: 'intro', 
+            game1: { // Memory Match 
                 cards: [],
                 flippedCards: [],
                 matchesFound: 0,
                 isLocked: false,
                 totalMatches: 4,
             },
-            game2: { // NEW: Fill Name
-                // !!! EDIT THIS TO THE RECIPIENT'S ACTUAL NAME !!!
+            game2: { // Fill Name
                 correctName: "Aye", 
             },
-            game3: { // EDITED: Birthday Date (26/09)
-                // The correct birthday (26/09)
-                correctDay: 15, // DARI: 15
-                correctMonth:11, // DARI: 11
+            game3: { // Birthday Date (26/09)
+                correctDay: 26, 
+                correctMonth: 9, 
             },
-            game4: { // EDITED: Password (Hint: 08/06/95)
-                correctPassword: "260909", // DARI: "260909"
+            game4: { // Password (Hint: 08/06/95)
+                correctPassword: "080695", 
             },
-            game5: { // NEW: Biodata Quiz
+            game5: { // Biodata Quiz
                 biodata: {
                     // !!! EDIT THESE FACTS TO MATCH YOUR PARTNER'S BIODATA !!!
                     "Name": "zahraaa",
@@ -168,15 +178,15 @@
                 },
                 quizAnswer: "ayee",
             },
-            game6: { // NEW: Do You Love Me? Trick
+            game6: { // Do You Love Me? Trick
                 isSolved: false,
             }
         };
 
         const birthdayMessage = {
-            recipient: "ayee",
-            message: "Selamat hari kelahiran ayeekuuu!\n\nAku bikin ini karena kamu sering bikin hidupku terasa lebih ringan, dan aku ingin kasih sesuatu yang bisa bikin hatimu ringan juga. Semoga saat kamu baca ini, kamu inget kalau ada seseorang yang selalu nyimpen kamu di pikirannya, dan selalu pengen lihat kamu bahagiaaaa. \n Semoga kamu selalu sehat, dijauhkan dari hal-hal yang bikin capek hati, dan selalu dikelilingi orang-orang baik yaa. Semoga tahun ini penuh hal indah dan berwarna. tetap jadi dirimu yang hangat dan bisa aku jadiin tempat pulang setiap harii yaaa?\n Jangan lupa juga jaga kesehatan dan kasih ruang buat kamu istirahat, karena kamu sering terlalu kuat sampai lupa kalau kamu juga pantas tenang, i love youu sayanggg!\n\nMade with love -Z" // SINTAKSIS DIPERBAIKI DI SINI
-        }; // SINTAKSIS DIPERBAIKI DI SINI
+            recipient: "untuk ayee dari zahraa",
+            message: "Selamat hari kelahiran ayeekuuu!\n\nAku bikin ini karena kamu sering bikin hidupku terasa lebih ringan, dan ingin kasih sesuatu yang bisa bikin hatimu ringan juga. Semoga saat kamu baca ini, kamu inget kalau ada seseorang yang selalu nyimpen kamu di pikirannya, dan selalu pengen lihat kamu bahagiaaaa. \n Semoga kamu selalu sehat, dijauhkan dari hal-hal yang bikin capek hati, dan selalu dikelilingi orang-orang baik yaa. Semoga tahun ini penuh hal indah dan berwarna. tetap jadi dirimu yang hangat dan bisa aku jadiin tempat pulang setiap harii yaaa?\n Jangan lupa juga jaga kesehatan dan kasih ruang buat kamu istirahat, karena kamu sering terlalu kuat sampai lupa kalau kamu juga pantas tenang, i love youu sayanggg!\n\nMade with love -Z" 
+        }; 
         
         // --- Gemini API Configuration ---
         const apiKey = ""; 
@@ -338,11 +348,11 @@
         // Custom Modal replacement for alert()
         const alertModal = (title, message) => {
             const modalHtml = `
-                <div id="custom-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-sm transition-opacity duration-300">
-                    <div class="bg-ivory text-velvet p-8 rounded-xl max-w-sm mx-4 shadow-2xl transform transition-transform duration-300 scale-100 border-4 border-accent">
-                        <h3 class="text-2xl font-bold font-fortalesia mb-3 text-velvet">${title}</h3>
+                <div id="custom-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-deep bg-opacity-70 backdrop-blur-sm transition-opacity duration-300">
+                    <div class="bg-cream text-deep p-8 rounded-xl max-w-sm mx-4 shadow-2xl transform transition-transform duration-300 scale-100 border-4 border-mauve">
+                        <h3 class="text-2xl font-bold font-fortalesia mb-3 text-deep">${title}</h3>
                         <p class="mb-5">${message}</p>
-                        <button id="modal-close" class="velvet-btn text-sm px-4 py-2 rounded-full font-semibold">
+                        <button id="modal-close" class="elegant-btn text-sm px-4 py-2 rounded-full font-semibold">
                             Continue
                         </button>
                     </div>
@@ -355,29 +365,29 @@
             });
         };
 
-        // --- Render Intro (UPDATED) ---
+        // --- Render Intro (CLEANER DESIGN) ---
 
         const renderIntro = () => {
             document.title = "A Special Day for My Love";
             return `
-                <div class="space-y-6 md:space-y-8 p-4 md:p-8">
-                    <p class="text-3xl font-fortalesia text-highlight">
+                <div class="space-y-8 p-4 md:p-8">
+                    <p class="text-4xl font-fortalesia text-deep">
                         A Little Birthday Gift!
                     </p>
-                    <h1 class="text-5xl md:text-7xl font-fortalesia font-bold text-highlight leading-tight">
+                    <h1 class="text-6xl md:text-8xl font-fortalesia font-bold text-deep leading-tight">
                        Hallo, selamat datang ayeee
                     </h1>
-                    <p class="text-xl md:text-2xl text-ivory opacity-80 max-w-2xl mx-auto">
+                    <p class="text-lg md:text-xl text-deep opacity-80 max-w-2xl mx-auto">
                         Sebelum dapet ucapan dari aku, kamu harus selesaiin beberapa game dulu yaaa!
                     </p>
-                    <button onclick="changePage('game1')" class="velvet-btn text-xl px-8 py-4 mt-6 rounded-full font-semibold shadow-xl hover:shadow-2xl">
-                        Start the Birthday Game!
+                    <button onclick="changePage('game1')" class="elegant-btn text-xl px-10 py-4 mt-8 rounded-full">
+                        Start the Birthday Game! ✨
                     </button>
                 </div>
             `;
         };
 
-        // --- Game 1: Memory Match (UNCHANGED) ---
+        // --- Game 1: Memory Match (DESIGN UPDATED) ---
 
         const initGame1 = () => {
             const symbols = ['🎂', '💖', '🎁', '🐻']; 
@@ -400,9 +410,9 @@
             const cardElements = gameState.game1.cards.map(card => `
                 <div class="card-wrapper aspect-square perspective-1000">
                     <div id="card-${card.id}" data-id="${card.id}" data-symbol="${card.symbol}" 
-                         class="card-game h-full relative ${card.isFlipped || card.isMatched ? 'flipped' : ''} ${card.isMatched ? 'opacity-50 pointer-events-none' : ''}">
+                         class="card-game h-full relative text-3xl md:text-4xl ${card.isFlipped || card.isMatched ? 'flipped' : ''} ${card.isMatched ? 'opacity-60 pointer-events-none' : ''}">
                         
-                        <div class="card-front text-3xl md:text-4xl">
+                        <div class="card-front">
                             ${card.isMatched ? '✅' : '❓'}
                         </div>
 
@@ -414,10 +424,10 @@
             `).join('');
 
             return `
-                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-highlight">Velvet Memory Match</h2>
-                <p class="text-lg text-ivory mb-6">Find the ${gameState.game1.totalMatches} pairs to unlock the next challenge!</p>
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">Lavender Memory Match</h2>
+                <p class="text-md text-deep/80 mb-6">Find the ${gameState.game1.totalMatches} pairs to unlock the next challenge!</p>
                 <div class="flex justify-center mb-6">
-                    <p class="text-xl text-highlight font-semibold">Matches: ${gameState.game1.matchesFound} / ${gameState.game1.totalMatches}</p>
+                    <p class="text-xl text-deep font-semibold">Matches: ${gameState.game1.matchesFound} / ${gameState.game1.totalMatches}</p>
                 </div>
                 <div class="card-grid grid grid-cols-4 gap-3 md:gap-5 w-full max-w-lg mx-auto">
                     ${cardElements}
@@ -455,8 +465,8 @@
 
                         if (gameState.game1.matchesFound === gameState.game1.totalMatches) {
                             setTimeout(() => {
-                                alertModal("Success!", "You found all the pairs! Next challenge unlocked.");
-                                changePage('game2'); // Go to NEW Game 2
+                                alertModal("Success! 🎉", "You found all the pairs! Next challenge unlocked.");
+                                changePage('game2'); 
                             }, 500);
                         }
                     }, 1000);
@@ -481,25 +491,25 @@
             });
         };
 
-        // --- NEW Game 2: Fill Your Name ---
+        // --- Game 2: Fill Your Name (DESIGN UPDATED) ---
 
         const renderGame2 = () => {
             document.title = "Challenge 2: Fill Your Name";
             return `
-                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-highlight">The Name Test</h2>
-                <p class="text-lg text-ivory mb-6 max-w-lg mx-auto">
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">The Name Test</h2>
+                <p class="text-md text-deep/80 mb-8 max-w-lg mx-auto">
                     Ketik nama kamu! (Hint: Yang biasanya aku panggil hehehe)
                 </p>
                 
                 <div class="flex flex-col justify-center items-center space-y-4 mb-6">
-                    <input type="text" id="name-input" placeholder="Enter your special name" class="input-style w-full max-w-xs focus:ring-4 focus:ring-highlight">
+                    <input type="text" id="name-input" placeholder="Enter your special name" class="input-style w-full max-w-xs focus:ring-4 focus:ring-mauve">
                 </div>
 
-                <button id="check-name-btn" class="velvet-btn text-lg px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl">
+                <button id="check-name-btn" class="elegant-btn text-lg px-8 py-3 rounded-xl">
                     Confirm Identity
                 </button>
 
-                <div id="name-message" class="mt-4 text-xl font-semibold min-h-[2rem]"></div>
+                <div id="name-message" class="mt-6 text-xl font-semibold min-h-[2rem]"></div>
             `;
         };
 
@@ -509,13 +519,13 @@
             const messageElement = document.getElementById('name-message');
 
             if (input.toLowerCase() === correct.toLowerCase()) {
-                messageElement.innerHTML = '<span class="text-white">Yes, that\'s you!</span>';
+                messageElement.innerHTML = '<span class="text-deep">Yes, that\'s you! ✅</span>';
                 document.getElementById('check-name-btn').disabled = true;
                 setTimeout(() => {
-                    changePage('game3'); // Go to NEW Game 3
+                    changePage('game3'); 
                 }, 1500);
             } else {
-                messageElement.innerHTML = '<span class="text-red-300">Hmm, try again.</span>';
+                messageElement.innerHTML = '<span class="text-red-game">Hmm, try again. ❌</span>';
             }
         };
 
@@ -526,27 +536,27 @@
             });
         };
 
-        // --- NEW Game 3: When It's Your Birthday ---
+        // --- Game 3: When It's Your Birthday (DESIGN UPDATED) ---
 
         const renderGame3 = () => {
             document.title = "Challenge 3: Your Special Day";
             return `
-                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-highlight">When is Your Birthday?</h2>
-                <p class="text-lg text-ivory mb-6 max-w-lg mx-auto">
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">When is Your Birthday?</h2>
+                <p class="text-md text-deep/80 mb-8 max-w-lg mx-auto">
                     Isi sesuai Tanggal & Bulan lahir kamuuu.
                 </p>
                 
                 <div class="flex justify-center items-center space-x-4 mb-6">
-                    <input type="number" id="day-input" min="1" max="31" maxlength="2" placeholder="DD" class="code-input input-style rounded-xl focus:ring-4 focus:ring-highlight" oninput="this.value=this.value.slice(0,2)" autofocus>
-                    <span class="text-3xl text-highlight">/</span>
-                    <input type="number" id="month-input" min="1" max="12" maxlength="2" placeholder="MM" class="code-input input-style rounded-xl focus:ring-4 focus:ring-highlight" oninput="this.value=this.value.slice(0,2)">
+                    <input type="number" id="day-input" min="1" max="31" maxlength="2" placeholder="DD" class="code-input input-style rounded-xl focus:ring-4 focus:ring-mauve" oninput="this.value=this.value.slice(0,2)" autofocus>
+                    <span class="text-3xl text-deep">/</span>
+                    <input type="number" id="month-input" min="1" max="12" maxlength="2" placeholder="MM" class="code-input input-style rounded-xl focus:ring-4 focus:ring-mauve" oninput="this.value=this.value.slice(0,2)">
                 </div>
 
-                <button id="check-date-btn" class="velvet-btn text-lg px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl">
+                <button id="check-date-btn" class="elegant-btn text-lg px-8 py-3 rounded-xl">
                     Verify Date
                 </button>
 
-                <div id="date-message" class="mt-4 text-xl font-semibold min-h-[2rem]"></div>
+                <div id="date-message" class="mt-6 text-xl font-semibold min-h-[2rem]"></div>
             `;
         };
 
@@ -556,13 +566,13 @@
             const messageElement = document.getElementById('date-message');
 
             if (dayInput === gameState.game3.correctDay && monthInput === gameState.game3.correctMonth) {
-                messageElement.innerHTML = '<span class="text-white">100% You already know that!</span>';
+                messageElement.innerHTML = '<span class="text-deep">100% You already know that! ✅</span>';
                 document.getElementById('check-date-btn').disabled = true;
                 setTimeout(() => {
-                    changePage('game4'); // Go to NEW Game 4
+                    changePage('game4'); 
                 }, 1500);
             } else {
-                messageElement.innerHTML = '<span class="text-red-300">That\'s not right! I need the correct day and month!</span>';
+                messageElement.innerHTML = '<span class="text-red-game">That\'s not right! I need the correct day and month! ❌</span>';
             }
         };
 
@@ -581,26 +591,26 @@
             });
         };
 
-        // --- NEW Game 4: Type Your Password ---
+        // --- Game 4: Type Your Password (DESIGN UPDATED) ---
 
         const renderGame4 = () => {
             document.title = "Challenge 4: Secret Password";
             return `
-                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-highlight">My Birthday wlee</h2>
-                <p class="text-lg text-ivory mb-6 max-w-lg mx-auto">
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">My Birthday wlee</h2>
+                <p class="text-md text-deep/80 mb-4 max-w-lg mx-auto">
                     Kode rahasianya adalah ultah kuuu.
                 </p>
-                <p class="text-lg text-highlight mb-6 italic">(Hint: ${gameState.game4.correctPassword.slice(0, 2)}/${gameState.game4.correctPassword.slice(2, 4)}/${gameState.game4.correctPassword.slice(4, 6)})</p>
+                <p class="text-lg text-deep mb-8 italic">(Hint: ${gameState.game4.correctPassword.slice(0, 2)}/${gameState.game4.correctPassword.slice(2, 4)}/${gameState.game4.correctPassword.slice(4, 6)})</p>
                 
                 <div class="flex flex-col justify-center items-center space-y-4 mb-6">
-                    <input type="password" id="password-input" placeholder="Enter 6-digit code" maxlength="6" class="input-style w-full max-w-xs text-center text-2xl focus:ring-4 focus:ring-highlight">
+                    <input type="password" id="password-input" placeholder="Enter 6-digit code" maxlength="6" class="input-style w-full max-w-xs text-center text-2xl focus:ring-4 focus:ring-mauve">
                 </div>
 
-                <button id="check-password-btn" class="velvet-btn text-lg px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl">
+                <button id="check-password-btn" class="elegant-btn text-lg px-8 py-3 rounded-xl">
                     Unlock Access
                 </button>
 
-                <div id="password-message" class="mt-4 text-xl font-semibold min-h-[2rem]"></div>
+                <div id="password-message" class="mt-6 text-xl font-semibold min-h-[2rem]"></div>
             `;
         };
 
@@ -610,13 +620,13 @@
             const messageElement = document.getElementById('password-message');
 
             if (input === correct) {
-                messageElement.innerHTML = '<span class="text-white">WOPYUUUU!!!</span>';
+                messageElement.innerHTML = '<span class="text-deep">WOPYUUUU!!! ✅</span>';
                 document.getElementById('check-password-btn').disabled = true;
                 setTimeout(() => {
-                    changePage('game5'); // Go to NEW Game 5
+                    changePage('game5'); 
                 }, 1500);
             } else {
-                messageElement.innerHTML = '<span class="text-red-300">Incorrect password.</span>';
+                messageElement.innerHTML = '<span class="text-red-game">Incorrect password. ❌</span>';
             }
         };
 
@@ -627,40 +637,40 @@
             });
         };
         
-        // --- NEW Challenge 5: Biodata About Me (Display + Quiz) ---
+        // --- Challenge 5: Biodata About Me (DESIGN UPDATED) ---
 
         const renderGame5 = () => {
             document.title = "Challenge 5: Biodata Check";
             
             const biodataHtml = Object.entries(gameState.game5.biodata).map(([key, value]) => `
-                <div class="flex justify-between items-center py-2 border-b border-accent/50 last:border-b-0">
-                    <span class="font-semibold text-highlight">${key}:</span>
-                    <span class="text-ivory">${value}</span>
+                <div class="flex justify-between items-center py-3 border-b border-mauve/50 last:border-b-0">
+                    <span class="font-semibold text-deep">${key}:</span>
+                    <span class="text-deep/80">${value}</span>
                 </div>
             `).join('');
             
             return `
-                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-highlight">Biodata Review</h2>
-                <p class="text-lg text-ivory mb-6 max-w-lg mx-auto">
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">Biodata Review</h2>
+                <p class="text-md text-deep/80 mb-8 max-w-lg mx-auto">
                     Baca baca tentang aku dulu sinii hehe
                 </p>
                 
-                <div class="bg-velvet/50 p-6 rounded-xl border-2 border-accent w-full max-w-md mx-auto mb-6 text-left">
+                <div class="bg-mauve/30 p-6 rounded-xl border-2 border-mauve w-full max-w-md mx-auto mb-8 text-left">
                     ${biodataHtml}
                 </div>
 
-                <h3 class="text-2xl font-fortalesia text-highlight mb-4">Quick Quiz:</h3>
-                <p class="text-lg text-ivory mb-4">Who is my favorite person?</p>
+                <h3 class="text-2xl font-fortalesia text-deep mb-4">Quick Quiz:</h3>
+                <p class="text-lg text-deep/90 mb-4">Who is my favorite person?</p>
 
                 <div class="flex flex-col justify-center items-center space-y-4 mb-6">
-                    <input type="text" id="quiz-input" placeholder="Enter" class="input-style w-full max-w-xs focus:ring-4 focus:ring-highlight">
+                    <input type="text" id="quiz-input" placeholder="Enter" class="input-style w-full max-w-xs focus:ring-4 focus:ring-mauve">
                 </div>
 
-                <button id="check-quiz-btn" class="velvet-btn text-lg px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl">
+                <button id="check-quiz-btn" class="elegant-btn text-lg px-8 py-3 rounded-xl">
                     Submit Answer
                 </button>
 
-                <div id="quiz-message" class="mt-4 text-xl font-semibold min-h-[2rem]"></div>
+                <div id="quiz-message" class="mt-6 text-xl font-semibold min-h-[2rem]"></div>
             `;
         };
 
@@ -670,13 +680,13 @@
             const messageElement = document.getElementById('quiz-message');
 
             if (input.toLowerCase() === correct.toLowerCase()) {
-                messageElement.innerHTML = '<span class="text-white">Correct!</span>';
+                messageElement.innerHTML = '<span class="text-deep">Correct! Of course it\'s you! ✅</span>';
                 document.getElementById('check-quiz-btn').disabled = true;
                 setTimeout(() => {
-                    changePage('game6'); // Go to NEW Game 6
+                    changePage('game6'); 
                 }, 1500);
             } else {
-                messageElement.innerHTML = '<span class="text-red-300">Oops, check the facts again!</span>';
+                messageElement.innerHTML = '<span class="text-red-game">Oops, check the facts again! ❌</span>';
             }
         };
 
@@ -687,27 +697,27 @@
             });
         };
 
-        // --- NEW Game 6: Do You Love Me? (Trick) ---
+        // --- Game 6: Do You Love Me? (Trick) (DESIGN UPDATED) ---
 
         const renderGame6 = () => {
             document.title = "Challenge 6: The Final Question";
             
             return `
-                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-highlight">The Final Test</h2>
-                <p class="text-lg text-ivory mb-6 max-w-lg mx-auto">
+                <h2 class="text-4xl font-fortalesia font-bold mb-4 text-deep">The Final Test</h2>
+                <p class="text-md text-deep/80 mb-8 max-w-lg mx-auto">
                     There's only one question left...
                 </p>
                 
-                <h3 class="text-3xl font-semibold text-highlight mb-10">Do you love me?</h3>
+                <h3 class="text-3xl font-semibold text-deep mb-10">Do you love me?</h3>
 
                 <div id="game6-area" class="flex justify-center items-center space-x-12 relative w-full max-w-lg mx-auto">
                     <!-- YES Button (Static and correct) -->
-                    <button id="yes-btn" class="velvet-btn text-2xl px-8 py-4 rounded-full font-semibold shadow-2xl hover:scale-105 transition-transform border-4 border-highlight">
-                        Yes!️
+                    <button id="yes-btn" class="elegant-btn text-2xl px-8 py-4 rounded-xl shadow-xl hover:scale-105 transition-transform border-4 border-deep">
+                        Yes!️ 💖
                     </button>
                     
                     <!-- NO Button (The trick button) -->
-                    <button id="no-btn" class="velvet-btn bg-red-game text-white text-lg px-6 py-3 rounded-full font-semibold shadow-lg border-2 border-red-900" 
+                    <button id="no-btn" class="text-cream bg-red-game text-lg px-6 py-3 rounded-full font-semibold shadow-lg" 
                             style="top: 0%; left: 65%;">
                         No :(
                     </button>
@@ -723,12 +733,12 @@
             document.getElementById('no-btn').disabled = true;
 
             if (isYes) {
-                messageElement.innerHTML = '<span class="text-white">You win!</span>';
+                messageElement.innerHTML = '<span class="text-deep">You win! ✨</span>';
                 setTimeout(() => {
-                    changePage('card'); // Go to Final Card
+                    changePage('card'); 
                 }, 1500);
             } else {
-                messageElement.innerHTML = '<span class="text-red-300">Error! Logic failure detected. Please choose the correct answer.</span>';
+                messageElement.innerHTML = '<span class="text-red-game">Error! Logic failure detected. Please choose the correct answer.</span>';
                 document.getElementById('yes-btn').disabled = false;
                 document.getElementById('no-btn').disabled = false;
             }
@@ -736,10 +746,9 @@
 
         const runAway = (e) => {
             const btn = e.target;
-            const area = document.getElementById('game6-area');
-            const areaRect = area.getBoundingClientRect();
             
-            // Generate new position (max 80% to keep it centered, min 20%)
+            // Generate new position (max 75% to keep it centered, min 25%)
+            // We use relative positioning to the area
             const newX = Math.random() * 50 + 25; // 25% to 75%
             const newY = Math.random() * 80;      // 0% to 80%
 
@@ -760,7 +769,7 @@
             noBtn.addEventListener('touchstart', runAway); // For touch screens
         };
 
-        // --- Final Card (UPDATED with Spotify) ---
+        // --- Final Card (DESIGN UPDATED) ---
 
         const generateAndPlayTTS = async (text) => {
             const btn = document.getElementById('tts-btn');
@@ -768,7 +777,7 @@
             const audio = document.getElementById('tts-audio');
 
             btn.disabled = true;
-            msg.innerHTML = '<span class="text-velvet">Generating audio...</span>';
+            msg.innerHTML = '<span class="text-deep">Generating audio...</span>';
 
             const cleanText = text.replace(/(\r\n|\n|\r)/gm, " ");
 
@@ -807,7 +816,7 @@
                     msg.innerHTML = '<span class="text-green-600">Playing message...</span>';
                     
                     audio.onended = () => {
-                        msg.innerHTML = '<span class="text-gray-600">Finished playback.</span>';
+                        msg.innerHTML = '<span class="text-deep/70">Finished playback.</span>';
                         btn.disabled = false;
                     };
                 } else {
@@ -815,7 +824,7 @@
                 }
             } catch (error) {
                 console.error("TTS Error:", error);
-                msg.innerHTML = '<span class="text-red-500">Error generating audio.</span>';
+                msg.innerHTML = '<span class="text-red-game">Error generating audio.</span>';
                 btn.disabled = false;
             }
         };
@@ -825,41 +834,39 @@
             const messageHtml = birthdayMessage.message.replace(/\n/g, '<br>');
             return `
                 <div class="p-4 md:p-8">
-                    <div class="bg-ivory text-velvet p-6 md:p-10 rounded-2xl shadow-2xl border-4 border-highlight">
-                        <p class="text-5xl md:text-6xl font-fortalesia font-bold mb-4 text-center text-accent">
+                    <div class="bg-lavender text-cream p-6 md:p-10 rounded-2xl shadow-2xl border-4 border-deep">
+                        <p class="text-6xl md:text-7xl font-fortalesia font-bold mb-4 text-center text-cream">
                             🎉 Happy Birthday! 🎉
                         </p>
                         <h2 class="text-3xl font-fortalesia font-semibold mb-6 text-center">
                             To ${birthdayMessage.recipient},
                         </h2>
-                        <div class="text-left text-lg md:text-xl leading-relaxed whitespace-pre-line text-gray-800">
+                        <div class="bg-cream/20 p-6 rounded-lg text-left text-lg md:text-xl leading-relaxed text-cream whitespace-pre-line shadow-inner">
                             ${messageHtml}
                         </div>
                         
-                        <div class="mt-8 text-center border-t border-velvet/30 pt-6">
-                            <button id="tts-btn" class="velvet-btn px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl">
+                        <div class="mt-8 text-center border-t border-cream/30 pt-6">
+                            <button id="tts-btn" class="elegant-btn bg-cream text-deep px-6 py-3 rounded-full hover:bg-white">
                                 Listen to the Message 🎤
                             </button>
-                            <div id="tts-status" class="mt-3 text-sm min-h-[1.5rem] text-gray-600"></div>
+                            <div id="tts-status" class="mt-3 text-sm min-h-[1.5rem] text-cream/80"></div>
                         </div>
 
                         <div class="mt-8 text-center">
-                            <h3 class="text-2xl font-fortalesia text-velvet mb-4">Your Birthday Playlist</h3>
-                            <p class="text-gray-700 mb-4">I made a special playlist just for you:</p>
+                            <h3 class="text-2xl font-fortalesia text-cream mb-4">Your Birthday Playlist</h3>
+                            <p class="text-cream/80 mb-4">I made a special playlist just for you:</p>
                             <!-- Spotify Iframe Mockup (Replace the URL with your actual playlist URL) -->
-                            <div class="w-full max-w-sm mx-auto bg-gray-900 rounded-lg overflow-hidden shadow-2xl">
-                                <a href="https://open.spotify.com/playlist/0ZauSo5C0u5PCW5vgNWCFM?si=nGKvpZf3RPSJgUFPZbYGJw" target="_blank" class="block p-4">
-                                    <div class="flex items-center space-x-4">
-                                        <svg class="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.18 17.55c-.198.322-.618.423-.938.225-2.618-1.608-5.918-1.99-9.158-1.07-1.168.322-2.318.152-3.138-.415-.818-.568-1.12-1.61-.75-2.73 1.25-3.832 3.86-7.14 7.03-8.86 1.05-.58 2.3-.398 3.06.33.76.728.98 1.9.48 2.92-2.07 4.35-4.63 7.82-7.2 9.5-.4.258-.8.36-1.18.258z"/>
-                                        </svg>
-                                        <div>
-                                            <p class="text-sm font-bold text-white text-left">The Birthday Vibe</p>
-                                            <p class="text-xs text-gray-400 text-left">A playlist by me, for you.</p>
-                                        </div>
+                            <a href="https://open.spotify.com/playlist/0ZauSo5C0u5PCW5vgNWCFM?si=nGKvpZf3RPSJgUFPZbYGJw" target="_blank" class="w-full max-w-sm mx-auto bg-deep rounded-lg overflow-hidden shadow-2xl inline-block hover:scale-[1.02] transition-transform">
+                                <div class="flex items-center space-x-4 p-4">
+                                    <svg class="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.18 17.55c-.198.322-.618.423-.938.225-2.618-1.608-5.918-1.99-9.158-1.07-1.168.322-2.318.152-3.138-.415-.818-.568-1.12-1.61-.75-2.73 1.25-3.832 3.86-7.14 7.03-8.86 1.05-.58 2.3-.398 3.06.33.76.728.98 1.9.48 2.92-2.07 4.35-4.63 7.82-7.2 9.5-.4.258-.8.36-1.18.258z"/>
+                                    </svg>
+                                    <div>
+                                        <p class="text-sm font-bold text-white text-left">The Birthday Vibe</p>
+                                        <p class="text-xs text-gray-400 text-left">A playlist by me, for you.</p>
                                     </div>
-                                </a>
-                            </div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -877,10 +884,6 @@
         window.onload = () => {
             initGame1();
             renderPage();
-            // Inject font styles (Pinyon Script)
-            const style = document.createElement('style');
-            style.textContent = `.font-fortalesia { font-family: 'Pinyon Script', cursive; }`;
-            document.head.appendChild(style);
         };
 
     </script>
